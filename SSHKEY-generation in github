@@ -21,6 +21,7 @@ if [ $? -eq 0 ]
 then
 echo "Copying the key to GitHub account"
 #curl -X POST -H "Content-type: application/json" -d "{\"title\": \"SSHKEY\",\"key\": \"$sshkey\"}" "https://api.github.com/user/keys?access_token=$token"
+#The above line is outdated. Use the one below
 curl \
         -X POST \
         -H "Accept: application/vnd.github+json" \
