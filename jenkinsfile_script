@@ -1,0 +1,38 @@
+node{
+    def mavenHome = tool name: 'maven3.8.6'
+    stage('1cloneCode'){
+        git "https://github.com/tezeh-ops/tesla-app"
+        //sh "git clone https://github.com/tezeh-ops/tesla-app" //we can also use this since our jenkis is install in linux os (redHat)
+        // bat "git clone  https://github.com/tezeh-ops/tesla-app " // is used for windows OS
+    }
+    stage('2Test&Build'){
+        sh "${mavenHome}/bin/mvn clean package"
+    }
+    stage('3codeQuality'){
+        sh "${mavenHome}/bin/mvn sonar:sonar"
+    }
+    stage('4uploadArtifacts'){
+        sh "${mavenHome}/bin/mvn deploy"
+    }
+ 
+   stage('5deploy2UAT'){
+        sh "echo 'depoly to UAT' "
+deploy adapters: [tomcat9(credentialsId: 'tomcat-credentials', path: '', url: 'http://172.31.95.93:8080/')], contextPath: null, war: 'target/*war'
+        
+    }
+     stage('6approvalGate'){
+        sh "echo 'ready for review' "
+        timeout(time:5, unit:'MINUTES'){
+        input message: 'Application ready for deployment, please review and approve.'
+        }
+    }
+    stage('7deploy2prod'){
+       deploy adapters: [tomcat9(credentialsId: 'tomcat-credentials', path: '', url: 'http://172.31.95.93:8080/')], contextPath: null, war: 'target/*war'
+         
+    }
+    stage('8emailNotification'){
+      emailext body: '''Hi, all. let look into this build.
+
+Tezehtech.com''', recipientProviders: [buildUser(), developers(), upstreamDevelopers(), brokenBuildSuspects(), contributor()], subject: 'build status', to: 'samuelmunoh@gmail.com'  
+    }
+}
