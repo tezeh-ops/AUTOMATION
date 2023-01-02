@@ -1,0 +1,41 @@
+node{
+    stage('codecheckout'){
+        sh "echo 'Running nissan nodejs project' "
+        git "https://github.com/tezeh-ops/nodejs-application"
+    }
+    stage('unitTest'){
+       // sh "npm test"
+    }
+    stage('Build'){
+        sh "echo 'creating build artifacts' "
+        nodejs(nodeJSInstallationName: 'nodejs19'){
+            
+        }
+            sh 'npm install'
+    }
+    stage('quality'){
+        sh "echo 'codequality Report' "
+         nodejs(nodeJSInstallationName: 'nodejs19'){
+            }
+            sh "npm run sonar"
+    }
+    stage('uploadArtifacts'){
+        sh "echo ' npm package uploaded' "
+         nodejs(nodeJSInstallationName: 'nodejs19'){
+         }
+       // sh "npm publish"
+    // nexusArtifactUploader credentialsId: 'NEXUS', groupId: 'NEXUS', nexusUrl: '44.211.239.12:8081/', nexusVersion: 'nexus3', protocol: 'http', repository: 'http://44.211.239.12:8081/repository/nissan-npm-app/', version: '3'
+        //jenkins nexus integration
+        // password = admin123 username = admin
+        //run ( echo -n 'admin:admin123' | openssl base64 ) to inscript the password admin123 and paste it in (.npmrc) file
+    }
+    stage('deployment'){
+        sh "echo 'deploying application' "
+        nodejs(nodeJSInstallationName: 'nodejs19'){
+            
+        }
+        sh "npm start"
+    }
+    
+}
+
